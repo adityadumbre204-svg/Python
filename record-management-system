@@ -1,1 +1,124 @@
+import json
+import os
 
+DATA_FILE = "records.json"
+
+# ==============================
+# File I/O Helpers
+# ==============================
+def load_records():
+    """Load records from JSON file with exception handling."""
+    if not os.path.exists(DATA_FILE):
+        return []
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except (json.JSONDecodeError, OSError):
+        print("⚠️ Error reading file. Starting with empty records.")
+        return []
+
+def save_records(records):
+    """Save records to JSON file with exception handling."""
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as file:
+            json.dump(records, file, indent=4)
+    except OSError:
+        print("⚠️ Error saving records.")
+
+# ==============================
+# CRUD Operations
+# ==============================
+def add_record(records):
+    try:
+        record_id = int(input("Enter ID: "))
+        name = input("Enter Name: ").strip()
+        course = input("Enter Course: ").strip()
+        records.append({"id": record_id, "name": name, "course": course})
+        save_records(records)
+        print("✅ Record added successfully!\n")
+    except ValueError:
+        print("⚠️ Invalid input. ID must be an integer.\n")
+
+def view_records(records):
+    if not records:
+        print("⚠️ No records found.\n")
+        return
+    print("\n--- Records ---")
+    for rec in records:
+        print(f"ID: {rec['id']}, Name: {rec['name']}, Course: {rec['course']}")
+    print()
+
+def search_record(records):
+    keyword = input("Enter ID or Name to search: ").strip().lower()
+    matches = [rec for rec in records if str(rec['id']) == keyword or keyword in rec['name'].lower()]
+    if matches:
+        print("\n🔍 Search Results:")
+        for rec in matches:
+            print(f"ID: {rec['id']}, Name: {rec['name']}, Course: {rec['course']}")
+    else:
+        print("⚠️ No matching records found.\n")
+
+def update_record(records):
+    try:
+        record_id = int(input("Enter ID to update: "))
+        for rec in records:
+            if rec['id'] == record_id:
+                rec['name'] = input("Enter new Name: ").strip()
+                rec['course'] = input("Enter new Course: ").strip()
+                save_records(records)
+                print("✅ Record updated successfully!\n")
+                return
+        print("⚠️ Record not found.\n")
+    except ValueError:
+        print("⚠️ Invalid input. ID must be an integer.\n")
+
+def delete_record(records):
+    try:
+        record_id = int(input("Enter ID to delete: "))
+        for rec in records:
+            if rec['id'] == record_id:
+                records.remove(rec)
+                save_records(records)
+                print("🗑️ Record deleted successfully!\n")
+                return
+        print("⚠️ Record not found.\n")
+    except ValueError:
+        print("⚠️ Invalid input. ID must be an integer.\n")
+
+# ==============================
+# Menu Loop
+# ==============================
+def menu():
+    records = load_records()
+    while True:
+        print("===== Record Management System =====")
+        print("1. Add Record")
+        print("2. View Records")
+        print("3. Search Record")
+        print("4. Update Record")
+        print("5. Delete Record")
+        print("6. Exit")
+        
+        choice = input("Enter your choice: ").strip()
+        
+        if choice == "1":
+            add_record(records)
+        elif choice == "2":
+            view_records(records)
+        elif choice == "3":
+            search_record(records)
+        elif choice == "4":
+            update_record(records)
+        elif choice == "5":
+            delete_record(records)
+        elif choice == "6":
+            print("👋 Exiting... Goodbye!")
+            break
+        else:
+            print("⚠️ Invalid choice. Try again.\n")
+
+# ==============================
+# Main Execution
+# ==============================
+if __name__ == "__main__":
+    menu()
